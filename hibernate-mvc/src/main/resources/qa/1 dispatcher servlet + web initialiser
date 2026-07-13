@@ -1,0 +1,554 @@
+----------------Конспект для вивчення, тут всі терміни і вся важлива інформація---------------------
+------------------Ця інформація друкується і вивчається для запамятовування-------------------------
+-----------------------------------1--------------------------------
+
+Що саме робить DispatcherServlet?
+
+DispatcherServlet виконує роль центрального координатора (Front Controller) у Spring MVC.
+Під час обробки кожного HTTP-запиту він послідовно виконує такі дії:
+
+Приймає HTTP-запит.
+Шукає відповідний Controller.
+Викликає потрібний метод контролера.
+Передає дані в об'єкт Model.
+Отримує від контролера назву View.
+Звертається до ViewResolver, щоб знайти відповідну JSP-сторінку.
+Формує та відправляє готову HTML-сторінку браузеру.
+
+Саме тому кажуть, що DispatcherServlet оркеструє роботу всього Spring MVC — він координує
+взаємодію між усіма компонентами фреймворку, від отримання запиту до повернення готової відповіді користувачу.
+
+Чому DispatcherServlet кращий за звичайні Servlet?
+
+Без Spring MVC для кожної окремої дії часто створювався власний сервлет:
+
+LoginServlet
+EmployeeServlet
+DepartmentServlet
+DeleteEmployeeServlet
+SaveEmployeeServlet
+EditEmployeeServlet
+
+Такий підхід призводить до великої кількості сервлетів, ускладнює підтримку коду та дублює однакову
+логіку обробки HTTP-запитів.
+
+Spring MVC використовує інший підхід: існує один DispatcherServlet, який приймає всі запити,
+а вже потім визначає, який саме Controller і який його метод повинен їх обробити. Це робить архітектуру
+застосунку значно простішою, гнучкішою та легшою для розширення.
+
+
+
+Звідки DispatcherServlet знає про Controller?
+
+Сам по собі DispatcherServlet не знає, які контролери існують у застосунку.
+Для цього використовується механізм сканування компонентів Spring.
+
+У конфігураційному класі ми вкажемо:
+@ComponentScan("com.example")
+
+Під час запуску застосунку Spring просканує пакет com.example та всі його вкладені пакети.
+
+Якщо він знайде клас, позначений анотацією:
+
+@Controller
+public class EmployeeController {
+    ...
+}
+
+то автоматично створить його як Spring Bean і зареєструє в Application Context.
+
+Після цього DispatcherServlet зможе знайти потрібний Controller і передати йому HTTP-запит.
+
+Таким чином, розробнику не потрібно вручну створювати об'єкти контролерів
+або реєструвати їх у коді — це виконує контейнер Spring під час запуску застосунку.
+
+Навіщо тоді MyWebInitializer?
+
+У старих версіях Spring роль початкової конфігурації виконував файл web.xml. Саме в ньому
+реєструвався DispatcherServlet, задавалися його параметри та визначалося, які URL він повинен обробляти.
+
+Починаючи з сучасних версій Spring, XML-конфігурацію можна повністю замінити Java Config.
+Для цього використовується клас MyWebInitializer, який під час запуску застосунку повідомляє Tomcat:
+
+створити DispatcherServlet;
+використати вказаний клас конфігурації Spring;
+передавати DispatcherServlet усі HTTP-запити.
+
+Завдяки цьому весь процес налаштування Spring MVC виконується за допомогою Java-коду без використання web.xml
+
+---------------------------------------додатково--------------------------------------------
+
+🎯 Що таке DispatcherServlet?
+
+DispatcherServlet — це центральний сервлет Spring MVC,
+який приймає всі HTTP-запити від користувача і вирішує,
+що з ними робити.
+
+Його часто називають Front Controller.
+
+Тобто замість того, щоб кожен Controller був окремим
+сервлетом, як це робилося в класичному Servlet API,
+є один DispatcherServlet, який керує всім.
+
+Як працює запит
+
+Припустимо, користувач відкрив
+
+http://localhost:8080/hibernate-mvc/employees
+
+Що відбувається?
+
+Браузер
+     │
+     ▼
+Tomcat
+     │
+     ▼
+DispatcherServlet
+     │
+     ▼
+Handler Mapping
+     │
+     ▼
+EmployeeController
+     │
+     ▼
+Service
+     │
+     ▼
+DAO
+     │
+     ▼
+Hibernate
+     │
+     ▼
+MySQL
+
+Потім усе йде назад:
+
+MySQL
+   ▲
+Hibernate
+   ▲
+DAO
+   ▲
+Service
+   ▲
+Controller
+   ▲
+DispatcherServlet
+   ▲
+ViewResolver
+   ▲
+JSP
+   ▲
+Браузер
+Чому його називають Front Controller?
+Тому що всі запити спочатку потрапляють саме до нього.
+Він знаходиться "попереду" всіх інших компонентів.
+Без нього Controller взагалі ніколи не буде викликаний.
+Що саме робить DispatcherServlet?
+Він виконує багато роботи.
+
+Наприклад:
+
+Приймає HTTP-запит.
+Шукає Controller.
+Викликає потрібний метод.
+Передає Model.
+Отримує назву View.
+Просить ViewResolver знайти JSP.
+Відправляє готову HTML-сторінку браузеру.
+
+Тому кажуть, що DispatcherServlet оркеструє роботу
+всього Spring MVC.
+
+Чому він кращий за звичайні Servlet?
+
+Якби не було Spring MVC, довелося б робити приблизно так:
+
+LoginServlet
+EmployeeServlet
+DepartmentServlet
+DeleteEmployeeServlet
+SaveEmployeeServlet
+EditEmployeeServlet
+
+...
+
+Кожен окремо.
+
+У Spring усе значно простіше:
+
+DispatcherServlet
+       │
+       ├── LoginController
+       ├── EmployeeController
+       ├── DepartmentController
+       └── ...
+
+Тобто є один сервлет, який уже знає, який Controller
+потрібно викликати.
+
+Звідки DispatcherServlet знає про Controller?
+Ось тут якраз і вступає в гру наша майбутня конфігурація.
+Ми скажемо Spring:
+@ComponentScan("com.example")
+Spring просканує пакет.
+Побачить
+@Controller
+public class EmployeeController
+і зареєструє його.
+Потім DispatcherServlet уже зможе знайти цей Controller.
+
+
+--------------------------2---------------------------
+
+Розбираємо кожну анотацію
+@Configuration
+@Configuration
+
+Повідомляє Spring:
+
+"Цей клас містить конфігурацію застосунку."
+
+Spring буде читати його під час запуску і створювати Bean, які ми
+додамо пізніше через @Bean.
+
+Без цієї анотації Spring просто проігнорує клас.
+
+@EnableWebMvc
+@EnableWebMvc
+
+Одна з найважливіших анотацій у Spring MVC.
+Вона активує MVC-інфраструктуру Spring.
+Після цього Spring автоматично створює необхідні Bean, серед яких:
+
+RequestMappingHandlerMapping;
+RequestMappingHandlerAdapter;
+обробку @Controller;
+підтримку @RequestMapping;
+підтримку @GetMapping;
+підтримку @PostMapping;
+конвертери даних;
+валідацію (коли ми її додамо).
+
+Якщо прибрати @EnableWebMvc, то навіть правильно написаний
+@Controller не буде працювати.
+
+@ComponentScan
+@ComponentScan("com.example")
+
+Каже Spring:
+"Проскануй пакет com.example і всі його вкладені пакети."
+Spring знайде всі класи, позначені такими анотаціями:
+
+@Controller
+@Service
+@Repository
+@Component
+
+і автоматично створить для них Bean.
+Тому нам не потрібно писати:
+new EmployeeController();
+або
+new EmployeeService();
+
+Це зробить Spring.
+
+🔍 Що відбувається під капотом
+
+Під час запуску застосунку відбувається така послідовність:
+
+Tomcat
+↓
+MyWebInitializer
+↓
+DispatcherServlet
+↓
+MyConfig
+↓
+@EnableWebMvc
+      ├── створює MVC Infrastructure
+      └── запускає Component Scan
+↓
+Spring знаходить Controller
+↓
+створює Application Context
+↓
+застосунок готовий приймати HTTP-запити
+
+Зверни увагу: зараз ComponentScan ще не знайде жодного контролера,
+адже ми їх ще не створили. Але це не помилка — ми спочатку будуємо
+інфраструктуру, а вже потім додаємо компоненти.
+
+⚠ Типові помилки
+1. Забули @Configuration
+Spring не розпізнає клас як конфігураційний.
+
+2. Неправильний пакет у @ComponentScan
+Наприклад:
+@ComponentScan("com.exampl")
+У результаті Spring не знайде жодного Controller або Service.
+
+3. Забули @EnableWebMvc
+Controller існують, але Spring MVC їх не обробляє.
+
+4. MyConfig знаходиться поза пакетом, який очікує MyWebInitializer
+У нашому випадку це не проблема, оскільки ми явно передаємо
+MyConfig.class у методі getServletConfigClasses().
+
+💼 Питання зі співбесіди
+
+1. Для чого потрібна анотація @Configuration?
+Вона позначає клас як джерело конфігурації Spring і дозволяє
+контейнеру створювати Bean, описані в ньому.
+
+2. Що робить @EnableWebMvc?
+Вмикає MVC-інфраструктуру Spring: обробку контролерів, мапінгів,
+адаптерів, конвертерів та інших компонентів, необхідних для роботи Spring MVC.
+
+3. Навіщо потрібен @ComponentScan?
+Він автоматично знаходить класи з анотаціями @Controller, @Service,
+@Repository і @Component та реєструє їх як Bean у Spring Container.
+
+
+-------------------------5--------------------------
+
+Крок 5. Налаштовуємо ViewResolver
+🎯 Мета
+
+Навчити Spring знаходити JSP-сторінки.
+
+Після цього Controller зможе повертати лише
+коротку назву View:
+
+return "main-menu";
+
+а Spring сам знайде файл
+/WEB-INF/view/main-menu.jsp
+
+Спочатку зрозуміємо проблему
+Уявімо, що ми вже написали Controller.
+
+@Controller
+public class HelloController {
+
+    @RequestMapping("/")
+    public String showHomePage() {
+        return "main-menu";
+    }
+}
+
+Питання.
+
+Що таке "main-menu" Для Java?
+Нічого. Просто рядок.
+
+Для DispatcherServlet?
+Теж просто рядок.
+
+Він не знає:
+
+чи це JSP;
+чи HTML;
+чи Thymeleaf;
+чи PDF;
+чи JSON.
+
+Потрібен компонент, який пояснить:
+
+Якщо Controller повернув "main-menu",
+потрібно відкрити ось цей файл.
+
+Саме ним є ViewResolver.
+Що робить InternalResourceViewResolver
+
+Він складає повний шлях із трьох частин.
+
+prefix
++
+viewName
++
+suffix
+
+тобто
+
+"/WEB-INF/view/"
++
+"main-menu"
++
+".jsp"
+
+отримуємо
+
+/WEB-INF/view/main-menu.jsp
+
+Саме цей файл відкриє DispatcherServlet.
+
+Візуально
+Controller
+↓
+return "main-menu"
+↓
+InternalResourceViewResolver
+↓
+prefix
+/WEB-INF/view/
+↓
+view name
+main-menu
+↓
+suffix
+.jsp
+↓
+/WEB-INF/view/main-menu.jsp
+
+# Реалізація
+
+У MyConfig додаємо метод
+
+@Bean
+
+public InternalResourceViewResolver viewResolver() {
+
+    InternalResourceViewResolver viewResolver =
+            new InternalResourceViewResolver();
+
+    viewResolver.setPrefix("/WEB-INF/view/");
+
+    viewResolver.setSuffix(".jsp");
+
+    return viewResolver;
+}
+
+Не забудь імпорти
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.view
+        .InternalResourceViewResolver;
+Розберемо кожний рядок
+
+@Bean
+
+Ми вже бачили анотації
+
+@Controller
+@Service
+@Repository
+
+Вони кажуть Spring:
+Створи Bean автоматично.
+
+Але InternalResourceViewResolver — це клас
+бібліотеки Spring.
+
+Ми не можемо поставити на нього @Component.
+Тому самі створюємо об'єкт.
+
+@Bean означає
+
+"Те, що повертає цей метод, потрібно покласти
+до Spring Container."
+
+Створення об'єкта
+InternalResourceViewResolver viewResolver =
+        new InternalResourceViewResolver();
+
+Тут усе звичайний Java-код.
+Створюємо об'єкт.
+Поки що він нічого не знає.
+
+Prefix
+viewResolver.setPrefix("/WEB-INF/view/");
+
+Ми повідомляємо:
+Усі JSP знаходяться ось тут.
+
+Suffix
+viewResolver.setSuffix(".jsp");
+
+Тепер Spring знає, що кожне View закінчується
+
+.jsp
+Return
+return viewResolver;
+
+Оскільки метод позначений
+@Bean
+
+Spring збереже цей об'єкт у своєму контейнері.
+
+Після запуску DispatcherServlet уже буде знати,
+де шукати сторінки.
+Чому JSP лежать у WEB-INF?
+
+Це дуже цікава особливість.
+Якби сторінки лежали просто тут
+
+webapp
+index.jsp
+employees.jsp
+
+будь-хто міг би відкрити
+http://localhost:8080/employees.jsp
+і оминути Controller.
+
+Тоді:
+
+бізнес-логіка не виконається;
+Model не заповниться;
+перевірки доступу можна обійти.
+
+Тому JSP майже завжди кладуть у
+WEB-INF
+
+Усе, що знаходиться всередині WEB-INF,
+не доступне напряму через браузер.
+Єдиний спосіб відобразити таку сторінку —
+пройти через DispatcherServlet,
+який викличе Controller, підготує дані
+та лише потім передасть керування ViewResolver.
+
+Як це виглядає тепер
+Browser
+↓
+DispatcherServlet
+↓
+HelloController
+↓
+return "main-menu"
+↓
+InternalResourceViewResolver
+↓
+/WEB-INF/view/main-menu.jsp
+↓
+HTML
+↓
+Browser
+
+Порівняння зі старим web.xml
+
+Ти якраз згадав web.xml. Раніше ViewResolver
+часто описували в XML приблизно так:
+
+<bean class="org.springframework.web.servlet
+.view.InternalResourceViewResolver">
+    <property name="prefix" value="/WEB-INF/view/" />
+    <property name="suffix" value=".jsp" />
+</bean>
+
+Тепер ми робимо те саме, але сучасним способом
+— через Java Config:
+
+@Bean
+public InternalResourceViewResolver viewResolver() {
+    InternalResourceViewResolver resolver =
+        new InternalResourceViewResolver();
+    resolver.setPrefix("/WEB-INF/view/");
+    resolver.setSuffix(".jsp");
+    return resolver;
+}
+
+Функціонально ці два варіанти еквівалентні.
+Відрізняється лише спосіб конфігурації: XML або Java.

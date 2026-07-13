@@ -1,0 +1,107 @@
+🔍 Розбираємо кожну анотацію
+@Configuration
+@Configuration
+
+Повідомляє Spring:
+
+"Цей клас містить конфігурацію застосунку."
+
+Spring буде читати його під час запуску і створювати Bean, які ми
+додамо пізніше через @Bean.
+
+Без цієї анотації Spring просто проігнорує клас.
+
+@EnableWebMvc
+@EnableWebMvc
+
+Одна з найважливіших анотацій у Spring MVC.
+Вона активує MVC-інфраструктуру Spring.
+Після цього Spring автоматично створює необхідні Bean, серед яких:
+
+RequestMappingHandlerMapping;
+RequestMappingHandlerAdapter;
+обробку @Controller;
+підтримку @RequestMapping;
+підтримку @GetMapping;
+підтримку @PostMapping;
+конвертери даних;
+валідацію (коли ми її додамо).
+
+Якщо прибрати @EnableWebMvc, то навіть правильно написаний
+@Controller не буде працювати.
+
+@ComponentScan
+@ComponentScan("com.example")
+
+Каже Spring:
+"Проскануй пакет com.example і всі його вкладені пакети."
+Spring знайде всі класи, позначені такими анотаціями:
+
+@Controller
+@Service
+@Repository
+@Component
+
+і автоматично створить для них Bean.
+Тому нам не потрібно писати:
+new EmployeeController();
+або
+new EmployeeService();
+
+Це зробить Spring.
+
+🔍 Що відбувається під капотом
+
+Під час запуску застосунку відбувається така послідовність:
+
+Tomcat
+↓
+MyWebInitializer
+↓
+DispatcherServlet
+↓
+MyConfig
+↓
+@EnableWebMvc
+      ├── створює MVC Infrastructure
+      └── запускає Component Scan
+↓
+Spring знаходить Controller
+↓
+створює Application Context
+↓
+застосунок готовий приймати HTTP-запити
+
+Зверни увагу: зараз ComponentScan ще не знайде жодного контролера,
+адже ми їх ще не створили. Але це не помилка — ми спочатку будуємо
+інфраструктуру, а вже потім додаємо компоненти.
+
+⚠ Типові помилки
+1. Забули @Configuration
+Spring не розпізнає клас як конфігураційний.
+
+2. Неправильний пакет у @ComponentScan
+Наприклад:
+@ComponentScan("com.exampl")
+У результаті Spring не знайде жодного Controller або Service.
+
+3. Забули @EnableWebMvc
+Controller існують, але Spring MVC їх не обробляє.
+
+4. MyConfig знаходиться поза пакетом, який очікує MyWebInitializer
+У нашому випадку це не проблема, оскільки ми явно передаємо
+MyConfig.class у методі getServletConfigClasses().
+
+💼 Питання зі співбесіди
+
+1. Для чого потрібна анотація @Configuration?
+Вона позначає клас як джерело конфігурації Spring і дозволяє
+контейнеру створювати Bean, описані в ньому.
+
+2. Що робить @EnableWebMvc?
+Вмикає MVC-інфраструктуру Spring: обробку контролерів, мапінгів,
+адаптерів, конвертерів та інших компонентів, необхідних для роботи Spring MVC.
+
+3. Навіщо потрібен @ComponentScan?
+Він автоматично знаходить класи з анотаціями @Controller, @Service,
+@Repository і @Component та реєструє їх як Bean у Spring Container.

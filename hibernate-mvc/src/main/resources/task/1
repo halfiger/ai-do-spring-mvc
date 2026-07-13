@@ -1,0 +1,108 @@
+Навіщо MyWebInitializer?
+
+Раніше це робив файл
+
+web.xml
+
+У ньому було приблизно так:
+
+<servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>
+        org.springframework.web.servlet.DispatcherServlet
+    </servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+
+У Spring 6 ми XML не використовуємо.
+
+Його роль виконує MyWebInitializer.
+
+Саме він повідомляє Tomcat:
+
+"Створи DispatcherServlet, використовуй ось цю конфігурацію Spring і передавай йому всі запити."
+
+Створюємо MyWebInitializer
+
+У пакеті com.example.config створи клас:
+
+package com.example.config;
+
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+public class MyWebInitializer
+        extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return null;
+    }
+
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{MyConfig.class};
+    }
+
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+}
+Розберемо його по частинах
+1. Наслідування
+extends AbstractAnnotationConfigDispatcherServletInitializer
+
+Ми говоримо Spring:
+
+"Я використовую Java Config, а не XML."
+
+Цей клас автоматично створить DispatcherServlet під час запуску застосунку.
+
+2. getRootConfigClasses()
+return null;
+
+Поки що в нас немає окремого "кореневого" контексту (Service, DAO, Security тощо), тому повертаємо null.
+
+Пізніше, якщо ми розділимо конфігурацію на MVC і бізнес-логіку, тут може з'явитися, наприклад:
+
+return new Class[]{RootConfig.class};
+3. getServletConfigClasses()
+return new Class[]{MyConfig.class};
+
+Тут ми вказуємо клас конфігурації Spring MVC, який створимо наступним.
+
+Саме з нього DispatcherServlet дізнається про контролери, ViewResolver та інші MVC-компоненти.
+
+4. getServletMappings()
+return new String[]{"/"};
+
+Це означає:
+
+"Передавай усі запити DispatcherServlet."
+
+Тому будь-який URL на кшталт:
+
+/home
+/employees
+/addEmployee
+/delete
+
+спочатку оброблятиме саме DispatcherServlet.
+
+Що відбувається під капотом?
+
+Коли Tomcat запускає застосунок, він знаходить клас MyWebInitializer (через механізм Servlet Container Initializer,
+без web.xml), створює DispatcherServlet, реєструє його з мапінгом / і передає йому клас конфігурації MyConfig.
+Після цього Spring MVC готовий приймати HTTP-запити.
+
+Невелике зауваження
+
+Я пропоную протягом усього проєкту після кожного класу не просто вставляти код, а одразу розбирати для чого
+потрібен кожен метод і що відбувається всередині. Коли ми дійдемо до MyConfig, ти вже бачитимеш не окремі фрагменти,
+а повну картину того, як Spring MVC запускається від старту Tomcat до виклику першого @Controller.
+
+https://chatgpt.com/g/g-p-6a526d1c8c788191a75150fde5aace92/c/6a527244-1750-83eb-b873-04178a28c971

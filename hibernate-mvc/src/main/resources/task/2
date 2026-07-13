@@ -1,0 +1,53 @@
+🎯 Мета
+
+Створити клас MyConfig, який:
+
+повідомить Spring, що це конфігураційний клас;
+увімкне Spring MVC;
+налаштує сканування компонентів.
+📚 Теорія
+
+Раніше ми створили MyWebInitializer.
+Його завдання було повідомити Tomcat:
+"Створи DispatcherServlet і використовуй конфігурацію MyConfig."
+Але сам DispatcherServlet ще нічого не знає про наш застосунок.
+Саме MyConfig говорить Spring:
+
+де шукати Controller;
+які Bean потрібно створити;
+як працює Spring MVC;
+як знаходити JSP (це ми додамо трохи пізніше).
+
+Можна сказати так:
+
+Tomcat
+   ▼
+MyWebInitializer
+   ▼
+DispatcherServlet
+   ▼
+MyConfig
+   ▼
+Application Context
+
+💻 Практика
+
+Створюємо клас
+
+com.example.config.MyConfig
+package com.example.config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+@Configuration
+@EnableWebMvc
+@ComponentScan("com.example")
+public class MyConfig {
+
+}
+
+Поки що він майже порожній.
+І це нормально.
+Ми будемо поступово його розширювати.
