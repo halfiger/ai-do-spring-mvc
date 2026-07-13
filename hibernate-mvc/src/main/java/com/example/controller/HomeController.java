@@ -6,18 +6,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-public class UserController {
+public class HomeController {
 
-    @RequestMapping ("/user")
+    @RequestMapping ("/home")
+    public String allUsers () {
+        return "all-users";
+    }
     public String showUsers (Model model) {
 
-        User user = new User();
-        user.setId(1);
-        user.setName("tom");
-        user.setEmail("tom@mail");
-
-        model.addAttribute("user", user);
-
-        return "user";
+        model.addAttribute("message", "Database connection is not configured yet.");
+        return "all-users";
     }
 }
